@@ -1,0 +1,21 @@
+{
+  "packageId": "com.refikozkiran.whatsmissing",
+  "host": "thunderous-torrone-1fb7cc.netlify.app",
+  "name": "What's Missing?",
+  "launcherName": "Missing",
+  "display": "standalone",
+  "themeColor": "#7c3aff",
+  "themeColorDark": "#0a0a14",
+  "navigationColor": "#0a0a14",
+  "navigationColorDark": "#0a0a14",
+  "backgroundColor": "#0a0a14",
+  "enableNotifications": false,
+  "startUrl": "/index.html",
+  "iconUrl": "https://thunderous-torrone-1fb7cc.netlify.app/icon-512.png",
+  "maskableIconUrl": "https://thunderous-torrone-1fb7cc.netlify.app/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  }
+}

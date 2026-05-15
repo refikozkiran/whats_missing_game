@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What's Missing?</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{overflow:hidden;height:100%}
+body{background:#0a0a14;color:#f0f0ff;font-family:Arial,sans-serif;min-height:100vh;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none;height:100%}
+body::-webkit-scrollbar{display:none}
+.screen{max-width:400px;margin:0 auto;padding:16px 16px 60px;position:relative;z-index:10;background:#0a0a14;min-height:100vh}
+#gameScreen,#overScreen,#statsScreen,#howScreen,#settingsScreen,#modesScreen{display:none}
+
+.lang-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#aaa;border-radius:99px;padding:6px 16px;font-size:13px;font-weight:700;cursor:pointer;}
+.lang-btn.lang-active{background:rgba(124,58,255,0.25);border-color:#a78bfa;color:#fff;}
+.lang-btn:active{transform:scale(0.95);}
+
+/* ── BUTTONS ── */
+.btn-main{width:100%;background:linear-gradient(135deg,#7c3aff,#ff3a7c);color:#fff;border:none;border-radius:14px;padding:15px;font-size:17px;font-weight:900;cursor:pointer;margin-bottom:8px}
+.btn-secondary{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#c0c0e0;border-radius:14px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.btn-main:active,.btn-secondary:active{transform:scale(0.97)}
+
+/* ── CARDS / BOXES ── */
+.box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:14px;margin-bottom:10px}
+.box-purple{background:rgba(124,58,255,0.08);border:1px solid rgba(124,58,255,0.25);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+
+.bnav-btn{background:none;border:none;color:#aaa;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 12px;border-radius:10px;transition:color 0.2s}
+.bnav-btn:active{color:#fff;transform:scale(0.93)}
+.bnav-label{font-size:10px;font-weight:700;letter-spacing:0.5px}
+
+/* ── START SCREEN ── */
+.logo{text-align:center;padding:28px 0 4px}
+.logo-eye{font-size:68px;display:inline-block;animation:floatY 3s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(124,58,255,0.6))}
+.logo-title{text-align:center;font-size:26px;font-weight:900;letter-spacing:-0.5px;background:linear-gradient(135deg,#fff 20%,#a78bfa 60%,#ff3a7c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:2px}
+.logo-sub{text-align:center;color:#555;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.tier{border-radius:12px;padding:12px;text-align:center;border:1px solid rgba(255,255,255,0.08)}
+.tier.g{background:#0d2e1a}.tier.y{background:#2a230a}.tier.o{background:#2a150a}.tier.r{background:#2a0a0a}
+.tier .tl{font-size:11px;font-weight:700;margin:4px 0}.tier .td{font-size:11px;color:#aaa}
+.tier.g .tl{color:#06d6a0}.tier.y .tl{color:#ffd166}.tier.o .tl{color:#ff9632}.tier.r .tl{color:#ff6b6b}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.menu-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;font-size:13px;color:#c0c0e0;font-weight:700}
+.menu-btn .mi{font-size:22px;display:block;margin-bottom:4px}
+.menu-btn:active{transform:scale(0.96)}
+.best-row{text-align:center;color:#555;font-size:13px;margin-bottom:12px}
+.best-row b{color:#ffd166}
+#dailyBanner{background:linear-gradient(135deg,rgba(255,209,102,0.12),rgba(255,58,124,0.08));border:1px solid rgba(255,209,102,0.25);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:none}
+#dailyBanner .db-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+#dailyBanner .db-title{font-size:13px;font-weight:700;color:#ffd166}
+#dailyBanner .db-pts{font-size:12px;color:#ffd166;background:rgba(255,209,102,0.15);padding:2px 8px;border-radius:99px}
+#dailyBanner .db-desc{font-size:12px;color:#aaa}
+#dailyBanner .db-bar{background:rgba(255,255,255,0.08);border-radius:99px;height:5px;margin-top:8px;overflow:hidden}
+#dailyBanner .db-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#ffd166,#ff3a7c);transition:width 0.4s}
+
+/* ── GAME SCREEN ── */
+.ghdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.gtitle{font-size:14px;font-weight:900;color:#a78bfa}
+.hdr-btns{display:flex;gap:6px}
+.hdr-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#aaa;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer}
+#endBtn{background:rgba(239,35,60,0.12);border-color:rgba(239,35,60,0.3);color:#ff6b6b}
+.sbar{display:flex;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:10px}
+.sc{flex:1;padding:9px 4px;text-align:center;border-right:1px solid rgba(255,255,255,0.06)}
+.sc:last-child{border-right:none}
+.sl{display:block;font-size:9px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.sv{font-size:20px;font-weight:900}
+.sv.gold{color:#ffd166}.sv.purple{color:#a78bfa}.sv.red{color:#ff6b6b}
+#livesRow{text-align:center;font-size:26px;letter-spacing:4px;margin-bottom:10px}
+.lcard{background:rgba(124,58,255,0.08);border:1px solid rgba(124,58,255,0.25);border-radius:12px;padding:10px 14px;margin-bottom:12px}
+.lrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+#lvlTxt{font-size:14px;font-weight:900}
+#lvlBadge{font-size:11px;color:#a78bfa;background:rgba(124,58,255,0.2);padding:3px 10px;border-radius:99px;font-weight:700}
+#pbg{background:rgba(255,255,255,0.08);border-radius:99px;height:6px;overflow:hidden}
+#pb{height:100%;border-radius:99px;background:linear-gradient(90deg,#7c3aff,#ff3a7c);width:0%;transition:width 0.4s}
+/* time attack timer */
+#timerWrap{display:none;margin-bottom:10px}
+#timerBar{background:rgba(255,255,255,0.08);border-radius:99px;height:10px;overflow:hidden}
+#timerFill{height:100%;border-radius:99px;background:linear-gradient(90deg,#06d6a0,#ffd166);width:100%;transition:width 0.1s linear}
+#timerNum{text-align:center;font-size:13px;color:#aaa;margin-top:4px}
+#phase{text-align:center;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:2px;min-height:16px;margin-bottom:12px}
+#grid{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:12px}
+.card{background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.1);border-radius:14px;display:flex;align-items:center;justify-content:center}
+#qtext{text-align:center;font-size:17px;font-weight:700;margin-bottom:12px;display:none}
+#qtext span{color:#ff3a7c}
+#opts{display:none;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:12px}
+.obtn{background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.1);border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff}
+.obtn.ok{background:rgba(6,214,160,0.18);border-color:#06d6a0}
+.obtn.no{background:rgba(239,35,60,0.18);border-color:#ef233c}
+#rbox{display:none;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:20px 16px;text-align:center;margin-bottom:8px}
+#rico{font-size:44px;display:block;margin-bottom:6px}
+#rtitle{font-size:20px;font-weight:900;margin-bottom:4px}
+#rsub{color:#666;font-size:13px;margin-bottom:10px}
+#rlup{display:none;background:rgba(124,58,255,0.15);border:1px solid rgba(124,58,255,0.3);border-radius:10px;padding:8px;font-size:13px;color:#c4b5fd;margin-bottom:8px}
+#rachieve{display:none;background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.3);border-radius:10px;padding:8px;font-size:13px;color:#ffd166;margin-bottom:8px}
+#nxtBtn{width:100%;background:linear-gradient(135deg,#7c3aff,#ff3a7c);color:#fff;border:none;border-radius:12px;padding:13px;font-size:16px;font-weight:900;cursor:pointer}
+
+/* ── MODES SCREEN ── */
+.mode-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:14px}
+.mode-card:active{transform:scale(0.98)}
+.mode-icon{font-size:36px;flex-shrink:0}
+.mode-info .mode-name{font-size:16px;font-weight:900;margin-bottom:3px}
+.mode-info .mode-desc{font-size:12px;color:#888;line-height:1.4}
+.mode-card.selected{border-color:#a78bfa;background:rgba(124,58,255,0.1)}
+
+/* ── GAME OVER ── */
+#overScreen{padding-top:30px;text-align:center}
+.go-icon{font-size:68px;display:block;margin-bottom:8px;animation:floatY 3s ease-in-out infinite}
+.go-title{font-size:28px;font-weight:900;color:#ef233c;margin-bottom:4px}
+.go-reason{color:#555;font-size:13px;margin-bottom:16px}
+.gostats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.gostat{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 6px;text-align:center}
+.gostat .gi{font-size:20px;display:block;margin-bottom:4px}
+.gostat .gv{font-size:20px;font-weight:900;color:#ffd166;display:block}
+.gostat .gl{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1px}
+.go-achiev{margin-bottom:14px}
+.go-achiev .ga-title{font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.achiev-list{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.achiev-badge{background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.25);border-radius:99px;padding:5px 12px;font-size:12px;color:#ffd166}
+.achiev-badge.locked{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);color:#444}
+
+/* ── STATS SCREEN ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;text-align:center}
+.stat-box .sb-val{font-size:24px;font-weight:900;color:#a78bfa;display:block;margin-bottom:2px}
+.stat-box .sb-label{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px}
+.accuracy-bar-wrap{margin-bottom:12px}
+.accuracy-bar-wrap .ab-label{display:flex;justify-content:space-between;font-size:12px;color:#888;margin-bottom:5px}
+.accuracy-bar-bg{background:rgba(255,255,255,0.08);border-radius:99px;height:8px;overflow:hidden}
+.accuracy-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#7c3aff,#06d6a0);transition:width 0.6s}
+
+/* ── HOW TO PLAY ── */
+.how-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+.how-num{background:linear-gradient(135deg,#7c3aff,#ff3a7c);color:#fff;border-radius:99px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0}
+.how-text .ht{font-size:14px;font-weight:700;margin-bottom:2px}
+.how-text .hd{font-size:12px;color:#888;line-height:1.5}
+
+/* ── SETTINGS SCREEN ── */
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.setting-row:last-child{border-bottom:none}
+.setting-label .sl-title{font-size:14px;font-weight:700}
+.setting-label .sl-sub{font-size:11px;color:#666;margin-top:2px}
+.toggle{width:44px;height:24px;background:#333;border-radius:99px;position:relative;cursor:pointer;border:none;transition:background 0.2s;flex-shrink:0}
+.toggle.on{background:#7c3aff}
+.toggle::after{content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:99px;top:3px;left:3px;transition:left 0.2s}
+.toggle.on::after{left:23px}
+
+/* ── SCREEN HEADER ── */
+.screen-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-top:16px}
+.back-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#aaa;border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer;flex-shrink:0}
+.screen-hdr h2{font-size:17px;font-weight:900;color:#f0f0ff}
+
+/* ── SHARE POPUP ── */
+#sharePopup{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;align-items:flex-end;justify-content:center}
+#sharePopup.show{display:flex}
+.share-sheet{background:#1a1a28;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:400px}
+.share-sheet h3{font-size:16px;font-weight:900;margin-bottom:4px}
+.share-sheet p{font-size:13px;color:#888;margin-bottom:16px}
+.share-text-box{background:#0a0a14;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;font-size:14px;color:#f0f0ff;margin-bottom:14px;line-height:1.5;word-break:break-word}
+.share-btns{display:flex;gap:8px}
+.share-copy{flex:1;background:linear-gradient(135deg,#7c3aff,#ff3a7c);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:900;cursor:pointer}
+.share-close{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#aaa;border-radius:12px;padding:13px 18px;font-size:15px;font-weight:700;cursor:pointer}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1a28;border:1px solid rgba(124,58,255,0.4);color:#f0f0ff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:700;z-index:9999;opacity:0;pointer-events:none;transition:opacity 0.3s;white-space:nowrap}
+#toast.show{opacity:1}
+
+@keyframes coinSpin{0%{transform:rotateY(0deg) scale(0.5)}50%{transform:rotateY(180deg) scale(1.2)}100%{transform:rotateY(360deg) scale(1)}}
+@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+</style>
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#7c3aff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="What's Missing?">
+<link rel="icon" href="/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<style>
+/* ── SPLASH ── */
+#custom-splash{
+  position:fixed;inset:0;z-index:999999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:hidden;background:#050510;opacity:1;
+  transition:opacity .65s ease, transform .65s ease;
+}
+#custom-splash.hide{opacity:0;transform:scale(1.03);pointer-events:none;}
+#custom-splash .splash-stars{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(1px 1px at 15% 20%,#fff 0%,transparent 100%),
+    radial-gradient(1px 1px at 35% 10%,#fff 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 55% 25%,#fff 0%,transparent 100%),
+    radial-gradient(1px 1px at 75% 8%,#fff 0%,transparent 100%),
+    radial-gradient(1px 1px at 90% 30%,#fff 0%,transparent 100%),
+    radial-gradient(1px 1px at 10% 55%,#fff 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 60%,#fff 0%,transparent 100%),
+    radial-gradient(1px 1px at 25% 75%,#fff 0%,transparent 100%),
+    radial-gradient(1px 1px at 60% 80%,#fff 0%,transparent 100%),
+    radial-gradient(1px 1px at 45% 90%,#fff 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 5% 85%,#fff 0%,transparent 100%),
+    radial-gradient(1px 1px at 92% 78%,#fff 0%,transparent 100%);
+}
+#custom-splash .splash-glow{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:340px;height:340px;
+  background:radial-gradient(ellipse at center,rgba(124,58,255,0.45) 0%,rgba(124,58,255,0.12) 45%,transparent 70%);
+  border-radius:50%;
+}
+#custom-splash .splash-bottom-glow{
+  position:absolute;bottom:0;left:0;right:0;height:80px;
+  background:linear-gradient(to top,rgba(124,58,255,0.5),transparent);
+}
+#custom-splash .splash-card{
+  position:relative;z-index:2;
+  background:rgba(10,10,30,0.85);
+  border:2px solid rgba(124,58,255,0.6);
+  border-radius:28px;padding:24px 20px 20px;width:220px;
+  box-shadow:0 0 40px rgba(124,58,255,0.5),inset 0 0 20px rgba(124,58,255,0.08);
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px;
+}
+#custom-splash .splash-tile{
+  border-radius:16px;width:86px;height:86px;
+  display:flex;align-items:center;justify-content:center;font-size:42px;
+}
+#custom-splash .splash-tile.blue{background:#1565c0}
+#custom-splash .splash-tile.orange{background:#e65100}
+#custom-splash .splash-tile.green{background:#2e7d32}
+#custom-splash .splash-tile.missing{
+  background:transparent;border:2px dashed rgba(180,100,255,0.7);
+  box-shadow:0 0 12px rgba(180,100,255,0.3);font-size:32px;
+}
+#custom-splash .splash-title-small{
+  position:relative;z-index:2;font-size:15px;font-weight:900;color:#fff;
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;text-align:center;
+}
+#custom-splash .splash-title-big{
+  position:relative;z-index:2;font-size:32px;font-weight:900;text-align:center;
+  background:linear-gradient(135deg,#c084fc 0%,#f472b6 50%,#fbbf24 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:36px;
+}
+#custom-splash .splash-loader-wrap{
+  position:absolute;bottom:9%;left:50%;transform:translateX(-50%);
+  width:60%;max-width:260px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;z-index:2;
+}
+#custom-splash .splash-loading-text{
+  font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);
+  letter-spacing:3px;text-transform:uppercase;
+}
+#custom-splash .splash-bar{
+  width:100%;height:7px;border-radius:99px;
+  background:rgba(255,255,255,.1);overflow:hidden;
+  box-shadow:0 0 18px rgba(124,58,255,.45);
+}
+#custom-splash .splash-bar span{
+  display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,#7c3aff,#ff3a7c,#ffd166);
+  transition:width 0.2s ease;
+}
+</style>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js').catch(function(e){console.log(e);});
+  });
+}
+
+window.addEventListener('load', function(){
+  var pct=0;
+  var bar=document.getElementById('splashProgressBar');
+  var fillInterval=setInterval(function(){
+    pct+=Math.random()*18+8;
+    if(pct>=100){pct=100;clearInterval(fillInterval);}
+    if(bar)bar.style.width=Math.min(pct,100)+'%';
+  },180);
+  setTimeout(function(){
+    if(bar)bar.style.width='100%';
+    setTimeout(function(){
+      var splash=document.getElementById('custom-splash');
+      if(splash){
+        splash.classList.add('hide');
+        setTimeout(function(){splash.remove();},700);
+      }
+    },300);
+  },2000);
+});
+</script>
+
+</head>
+<body>
+<div id="custom-splash">
+  <div class="splash-stars"></div>
+  <div class="splash-glow"></div>
+  <div class="splash-bottom-glow"></div>
+  <div class="splash-card">
+    <div class="splash-tile blue">🚀</div>
+    <div class="splash-tile orange">⭐</div>
+    <div class="splash-tile green">🦖</div>
+    <div class="splash-tile missing">?</div>
+  </div>
+  <div class="splash-title-small">— WHAT'S —</div>
+  <div class="splash-title-big">MISSING?</div>
+  <div class="splash-loader-wrap">
+    <div class="splash-loading-text">Loading</div>
+    <div class="splash-bar"><span id="splashProgressBar" style="width:0%"></span></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- SHARE POPUP -->
+<div id="sharePopup">
+  <div class="share-sheet">
+    <h3>🎮 Share Your Score</h3>
+    <p>Challenge your friends!</p>
+    <div class="share-text-box" id="shareText"></div>
+    <div class="share-btns">
+      <button class="share-copy" onclick="copyShare()">📋 Copy</button>
+      <button class="share-close" onclick="closeShare()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- INTRO POPUP -->
+<div id="introPopup" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#12121e;border:1px solid rgba(124,58,255,0.4);border-radius:20px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 0 40px rgba(124,58,255,0.25)">
+    <div style="font-size:48px;margin-bottom:12px">👁️</div>
+    <div id="introTitle" style="font-size:19px;font-weight:900;color:#fff;margin-bottom:10px">How to Play</div>
+    <div id="introText" style="font-size:14px;color:#aaa;line-height:1.7;margin-bottom:20px">Birazdan nesnelerden biri kaybolacak, hangi nesnenin kaybolduğunu bulmalısın.</div>
+    <label style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:#777;cursor:pointer;margin-bottom:18px">
+      <input type="checkbox" id="introDontShow" style="width:16px;height:16px;accent-color:#7c3aff">
+      <span id="introDontShowLabel">Bir daha gösterme</span>
+    </label>
+    <button id="introStartBtn" onclick="confirmStartGame()" style="width:100%;background:linear-gradient(135deg,#7c3aff,#ff3a7c);color:#fff;border:none;border-radius:12px;padding:13px;font-size:16px;font-weight:900;cursor:pointer">🎮 Başla!</button>
+  </div>
+</div>
+
+<!-- EXIT APP POPUP -->
+<div id="exitAppPopup" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:24px">
+  <div style="background:#12121e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:28px 22px;max-width:320px;width:100%;text-align:center;box-shadow:0 0 30px rgba(0,0,0,0.5)">
+    <div style="font-size:40px;margin-bottom:12px">👋</div>
+    <div id="exitAppTitle" style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">Uygulamadan Çık?</div>
+    <div id="exitAppText" style="font-size:13px;color:#aaa;margin-bottom:22px">Oyundan çıkmak istediğine emin misin?</div>
+    <div style="display:flex;gap:10px">
+      <button id="exitAppCancel" onclick="document.getElementById('exitAppPopup').style.display='none'" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#aaa;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">Hayır</button>
+      <button id="exitAppOk" onclick="navigator.app&&navigator.app.exitApp?navigator.app.exitApp():window.close()" style="flex:1;background:rgba(124,58,255,0.2);border:1px solid rgba(124,58,255,0.4);color:#a78bfa;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">Evet, Çık</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOLD EARNED POPUP -->
+<div id="goldPopup" onclick="closeGoldPopup()" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:24px">
+  <div id="goldPopupBox" style="background:#12121e;border:2px solid rgba(255,209,102,0.5);border-radius:24px;padding:32px 24px;max-width:300px;width:100%;text-align:center;box-shadow:0 0 60px rgba(255,209,102,0.3);transform:scale(0.8);opacity:0;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s ease">
+    <div style="font-size:56px;margin-bottom:8px;animation:coinSpin 0.6s ease">🪙</div>
+    <div id="goldPopupEarned" style="font-size:32px;font-weight:900;color:#ffd166;margin-bottom:4px">+60</div>
+    <div id="goldPopupLabel" style="font-size:14px;color:#aaa;margin-bottom:16px">altın kazandın!</div>
+    <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:16px"></div>
+    <div id="goldPopupTotal" style="font-size:13px;color:#777;margin-bottom:4px">Toplam</div>
+    <div id="goldPopupTotalVal" style="font-size:22px;font-weight:900;color:#ffd166">🪙 660</div>
+    <div id="goldPopupTap" style="font-size:11px;color:#444;margin-top:16px;animation:pulse 1.5s ease-in-out infinite">Devam etmek için ekrana dokun</div>
+  </div>
+</div>
+
+<!-- EXTRA LIFE POPUP -->
+<div id="extraLifePopup" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;padding:24px">
+  <div style="background:#12121e;border:2px solid rgba(6,214,160,0.4);border-radius:24px;padding:28px 22px;max-width:320px;width:100%;text-align:center;box-shadow:0 0 50px rgba(6,214,160,0.2)">
+    <div style="font-size:52px;margin-bottom:8px">❤️</div>
+    <div id="extraLifeTitle" style="font-size:19px;font-weight:900;color:#fff;margin-bottom:6px">Devam etmek ister misin?</div>
+    <div id="extraLifeDesc" style="font-size:13px;color:#aaa;margin-bottom:20px">1.000 🪙 altın karşılığında 1 can al ve oyuna kaldığın yerden devam et.</div>
+    <div id="extraLifeGoldInfo" style="font-size:12px;color:#ffd166;margin-bottom:16px;font-weight:700"></div>
+    <button id="extraLifeYes" onclick="buyExtraLife()" style="width:100%;background:linear-gradient(135deg,#06d6a0,#0891b2);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px"></button>
+    <button id="extraLifeNo" onclick="declineExtraLife()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#666;border-radius:14px;padding:12px;font-size:14px;font-weight:700;cursor:pointer"></button>
+  </div>
+</div>
+
+<!-- RESET CONFIRM POPUP -->
+<div id="resetConfirmPopup" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:24px">
+  <div style="background:#12121e;border:1px solid rgba(255,209,102,0.3);border-radius:20px;padding:28px 22px;max-width:320px;width:100%;text-align:center;box-shadow:0 0 30px rgba(255,209,102,0.1)">
+    <div style="font-size:40px;margin-bottom:12px">🗑️</div>
+    <div id="resetConfirmTitle" style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">Reset Statistics</div>
+    <div id="resetConfirmText" style="font-size:13px;color:#aaa;line-height:1.6;margin-bottom:22px">All scores, achievements and statistics will be deleted. This cannot be undone.</div>
+    <div style="display:flex;gap:10px">
+      <button id="resetConfirmCancel" onclick="closeResetConfirm()" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#aaa;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">Cancel</button>
+      <button id="resetConfirmOk" onclick="doResetStats()" style="flex:1;background:rgba(255,209,102,0.15);border:1px solid rgba(255,209,102,0.35);color:#ffd166;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- END CONFIRM POPUP -->
+<div id="endConfirmPopup" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:24px">
+  <div style="background:#12121e;border:1px solid rgba(239,35,60,0.35);border-radius:20px;padding:28px 22px;max-width:320px;width:100%;text-align:center;box-shadow:0 0 30px rgba(239,35,60,0.2)">
+    <div style="font-size:40px;margin-bottom:12px">⚠️</div>
+    <div id="endConfirmTitle" style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">Oyunu Sonlandır?</div>
+    <div id="endConfirmText" style="font-size:13px;color:#aaa;margin-bottom:22px">İlerlemeniz kaydedilmeyecek.</div>
+    <div style="display:flex;gap:10px">
+      <button id="endConfirmCancel" onclick="closeEndConfirm()" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#aaa;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer"></button>
+      <button id="endConfirmOk" onclick="doEndGame()" style="flex:1;background:rgba(239,35,60,0.2);border:1px solid rgba(239,35,60,0.4);color:#ff6b6b;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ START ══ -->
+<div id="startScreen" class="screen" style="display:flex;flex-direction:column;height:100vh;padding:0;overflow:hidden;position:fixed;inset:0;z-index:1">
+
+  <!-- TOP BAR -->
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px 0;flex-shrink:0">
+    <div style="display:flex;gap:6px">
+      <button id="langEN" class="lang-btn lang-active" onclick="setLang('en')">🇬🇧 EN</button>
+      <button id="langTR" class="lang-btn" onclick="setLang('tr')">🇹🇷 TR</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div id="goldDisplay" style="font-size:13px;font-weight:800;color:#ffd166">🪙 0</div>
+      <button onclick="document.getElementById('goldInfoPopup').style.display='flex'" style="width:18px;height:18px;border-radius:50%;background:rgba(255,209,102,0.15);border:1px solid rgba(255,209,102,0.4);color:#ffd166;font-size:10px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">i</button>
+    </div>
+  </div>
+
+  <!-- MIDDLE CONTENT -->
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 20px;overflow:hidden">
+
+    <!-- LOGO -->
+    <div style="font-size:64px;animation:floatY 3s ease-in-out infinite;filter:drop-shadow(0 0 24px rgba(124,58,255,0.7));margin-bottom:10px">👁️</div>
+    <div class="logo-title" style="font-size:26px;margin-bottom:2px">What's Missing?</div>
+    <div class="logo-sub" style="margin-bottom:20px" id="logoSub">MEMORY GAME</div>
+
+    <!-- BEST SCORE CARD -->
+    <div id="bestRow" style="width:100%;max-width:320px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:11px;color:#555;letter-spacing:1px" id="bestLabel">EN İYİ SKOR</div>
+      <div style="font-size:20px;font-weight:900;color:#ffd166" id="bestShow">0</div>
+    </div>
+
+    <!-- DAILY GOAL CARD -->
+    <div id="dailyBanner" style="width:100%;max-width:320px;background:linear-gradient(135deg,rgba(255,209,102,0.1),rgba(255,58,124,0.07));border:1px solid rgba(255,209,102,0.2);border-radius:14px;padding:14px 16px;margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="font-size:11px;color:#ffd166;letter-spacing:1px" id="dailyBannerTitle">GÜNLÜK GÖREV</div>
+        <div style="font-size:13px;font-weight:700;color:#fff" id="dailyDesc">0/100 🪙</div>
+      </div>
+      <div id="dailySubDesc" style="font-size:11px;color:#888;margin-bottom:6px">Bugün 100 doğru cevap ver</div>
+      <div class="db-bar"><div class="db-fill" id="dailyFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- START BUTTON -->
+    <button class="btn-main" id="startBtn" onclick="startGame()" style="width:100%;max-width:320px;font-size:18px;padding:17px">🎮 START PLAYING</button>
+  </div>
+
+  <!-- BOTTOM NAV - always at bottom -->
+  <div style="flex-shrink:0;display:flex;justify-content:space-around;align-items:center;padding:12px 16px 24px;border-top:1px solid rgba(255,255,255,0.07);background:rgba(10,10,20,0.98)">
+    <button class="bnav-btn" onclick="goScreen('modesScreen')">
+      <span style="font-size:22px">🎮</span>
+      <span class="bnav-label" id="bnavModes">Modes</span>
+    </button>
+    <button class="bnav-btn" onclick="goScreen('statsScreen')">
+      <span style="font-size:22px">📊</span>
+      <span class="bnav-label" id="bnavStats">Stats</span>
+    </button>
+    <button class="bnav-btn" onclick="goScreen('howScreen')">
+      <span style="font-size:22px">❓</span>
+      <span class="bnav-label" id="bnavHow">How to</span>
+    </button>
+    <button class="bnav-btn" onclick="goScreen('settingsScreen')">
+      <span style="font-size:22px">⚙️</span>
+      <span class="bnav-label" id="bnavSettings">Settings</span>
+    </button>
+  </div>
+</div>
+
+<!-- GOLD INFO POPUP -->
+<div id="goldInfoPopup" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:24px">
+  <div style="background:#12121e;border:1px solid rgba(255,209,102,0.3);border-radius:20px;padding:28px 22px;max-width:320px;width:100%;text-align:center;box-shadow:0 0 30px rgba(255,209,102,0.1)">
+    <div style="font-size:36px;margin-bottom:12px">🪙</div>
+    <div id="goldInfoTitle" style="font-size:17px;font-weight:900;color:#ffd166;margin-bottom:16px">Altın Sistemi</div>
+    <div style="text-align:left;font-size:13px;color:#aaa;line-height:1.9">
+      <div id="goldInfoLine1">🎯 Her 10 puan → 1 🪙 altın</div>
+      <div id="goldInfoLine2">📅 Günlük görevi tamamla → +100 🪙</div>
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:12px 0"></div>
+      <div id="goldInfoLine3">❤️ 1.000 🪙 = Ekstra Can</div>
+      <div id="goldInfoLine4" style="font-size:11px;color:#666;margin-top:4px">Oyun bittiğinde kullanabilirsin</div>
+    </div>
+    <button onclick="document.getElementById('goldInfoPopup').style.display='none'" style="margin-top:20px;width:100%;background:rgba(255,209,102,0.15);border:1px solid rgba(255,209,102,0.35);color:#ffd166;border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer" id="goldInfoClose">Tamam</button>
+  </div>
+</div>
+
+<!-- ══ MODE SELECT ══ -->
+<div id="modesScreen" class="screen">
+  <div class="screen-hdr"><button class="back-btn" onclick="goScreen('startScreen')">← Back</button><h2>Game Modes</h2></div>
+  <div class="mode-card selected" id="modeClassic" onclick="selectMode('classic')">
+    <span class="mode-icon">🎯</span>
+    <div class="mode-info"><div class="mode-name">Classic</div><div class="mode-desc">3 lives · level up every correct answer · unlimited time</div></div>
+  </div>
+  <div class="mode-card" id="modeTime" onclick="selectMode('timeattack')">
+    <span class="mode-icon">⏱️</span>
+    <div class="mode-info"><div class="mode-name">Time Attack</div><div class="mode-desc">30 seconds · answer as many as you can · no lives</div></div>
+  </div>
+  <div class="mode-card" id="modeSudden" onclick="selectMode('sudden')">
+    <span class="mode-icon">💀</span>
+    <div class="mode-info"><div class="mode-name">Sudden Death</div><div class="mode-desc">1 mistake and it's over · no lives · high risk, high reward</div></div>
+  </div>
+  <button class="btn-main" onclick="startGame()">Start Selected Mode</button>
+</div>
+
+<!-- ══ GAME ══ -->
+<div id="gameScreen" class="screen">
+  <div class="ghdr">
+    <div class="gtitle">👁️ What's Missing?</div>
+    <div class="hdr-btns">
+      <button class="hdr-btn" id="shareBtn" onclick="openShare()">↗ Share</button>
+      <button class="hdr-btn" id="endBtn" onclick="endGame()">✕ End</button>
+    </div>
+  </div>
+
+  <div class="sbar">
+    <div class="sc"><span class="sl">Score</span><span class="sv gold" id="scoreV">0</span></div>
+    <div class="sc"><span class="sl">Streak</span><span class="sv purple" id="streakV">0</span></div>
+    <div class="sc"><span class="sl">Best</span><span class="sv gold" id="bestV">0</span></div>
+  </div>
+
+  <div id="livesRow">❤️❤️❤️</div>
+
+  <div id="timerWrap">
+    <div id="timerBar"><div id="timerFill"></div></div>
+    <div id="timerNum">30s</div>
+  </div>
+
+  <div class="lcard">
+    <div class="lrow"><div id="lvlTxt">Level 1</div><div id="lvlBadge">3 items 🟢</div></div>
+    <div id="pbg"><div id="pb"></div></div>
+  </div>
+
+  <div id="phase"></div>
+  <div id="grid"></div>
+  <div id="qtext">Which one is <span>missing</span>?</div>
+  <div id="opts"></div>
+
+  <div id="rbox">
+    <span id="rico"></span>
+    <div id="rtitle"></div>
+    <div id="rsub"></div>
+    <div id="rlup"></div>
+    <div id="rachieve"></div>
+    <button id="nxtBtn" onclick="nextRound()">Continue →</button>
+  </div>
+</div>
+
+<!-- ══ GAME OVER ══ -->
+<div id="overScreen" class="screen">
+  <span class="go-icon">💀</span>
+  <div class="go-title">Game Over!</div>
+  <div class="go-reason" id="goReason">You ran out of lives</div>
+  <div class="gostats">
+    <div class="gostat"><span class="gi">🏆</span><span class="gv" id="goSc">0</span><span class="gl">Score</span></div>
+    <div class="gostat"><span class="gi">📈</span><span class="gv" id="goLv">1</span><span class="gl">Level</span></div>
+    <div class="gostat"><span class="gi">⭐</span><span class="gv" id="goBt">0</span><span class="gl">Best</span></div>
+  </div>
+
+  <!-- GOLD EARNED -->
+  <div id="goldEarnedRow" style="display:none;background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.3);border-radius:14px;padding:12px 16px;margin:12px 0;font-size:15px;font-weight:700;color:#ffd166;text-align:center"></div>
+
+  <div class="go-achiev">
+    <div class="ga-title">Achievements</div>
+    <div class="achiev-list" id="achievList"></div>
+  </div>
+  <button class="btn-main" onclick="openShare()">↗ Share Result</button>
+  <button class="btn-main" onclick="restartGame()">🔄 Play Again</button>
+  <button class="btn-secondary" onclick="goMenu()">🏠 Main Menu</button>
+</div>
+
+<!-- ══ STATS ══ -->
+<div id="statsScreen" class="screen">
+  <div class="screen-hdr"><button class="back-btn" onclick="goScreen('startScreen')">← Back</button><h2>Statistics</h2></div>
+  <div class="stat-grid">
+    <div class="stat-box"><span class="sb-val" id="st_games">0</span><span class="sb-label">Total Games</span></div>
+    <div class="stat-box"><span class="sb-val" id="st_best">0</span><span class="sb-label">Best Score</span></div>
+    <div class="stat-box"><span class="sb-val" id="st_correct">0</span><span class="sb-label">Correct</span></div>
+    <div class="stat-box"><span class="sb-val" id="st_streak">0</span><span class="sb-label">Best Streak</span></div>
+    <div class="stat-box"><span class="sb-val" id="st_level">1</span><span class="sb-label">Best Level</span></div>
+    <div class="stat-box"><span class="sb-val" id="st_daily">0</span><span class="sb-label">Daily Done</span></div>
+  </div>
+  <div class="accuracy-bar-wrap">
+    <div class="ab-label"><span>Accuracy</span><span id="st_acc">0%</span></div>
+    <div class="accuracy-bar-bg"><div class="accuracy-bar-fill" id="accFill" style="width:0%"></div></div>
+  </div>
+  <div class="box">
+    <div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Achievements</div>
+    <div id="achievFull" class="achiev-list" style="justify-content:flex-start"></div>
+  </div>
+</div>
+
+<!-- ══ HOW TO PLAY ══ -->
+<div id="howScreen" class="screen">
+  <div class="screen-hdr"><button class="back-btn" onclick="goScreen('startScreen')">← Back</button><h2>How to Play</h2></div>
+  <div class="how-step"><div class="how-num">1</div><div class="how-text"><div class="ht">Memorize the items</div><div class="hd">A set of emoji items appears on screen. Study them carefully — you have limited time!</div></div></div>
+  <div class="how-step"><div class="how-num">2</div><div class="how-text"><div class="ht">The screen flashes</div><div class="hd">The screen blinks and one item disappears. Pay close attention!</div></div></div>
+  <div class="how-step"><div class="how-num">3</div><div class="how-text"><div class="ht">Find what's missing</div><div class="hd">Three options appear below. Tap the one that was removed.</div></div></div>
+  <div class="how-step"><div class="how-num">4</div><div class="how-text"><div class="ht">Level up!</div><div class="hd">Every correct answer levels you up. Higher levels = more items + less time to memorize.</div></div></div>
+  <div class="how-step"><div class="how-num">5</div><div class="how-text"><div class="ht">Don't lose all lives</div><div class="hd">You have 3 lives in Classic mode. 3 wrong answers and it's game over!</div></div></div>
+  <div class="box-purple" style="margin-top:8px">
+    <div class="pro-tips-title" style="font-size:13px;font-weight:700;color:#a78bfa;margin-bottom:6px">💡 Pro Tips</div>
+    <div class="pro-tips-text" style="font-size:12px;color:#aaa;line-height:1.7">• Focus on the shape and color of each emoji<br>• At higher levels, scan left-to-right like reading<br>• In Time Attack, speed matters more than accuracy<br>• Sudden Death rewards calm, careful thinking</div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS ══ -->
+<div id="settingsScreen" class="screen">
+  <div class="screen-hdr"><button class="back-btn" onclick="goScreen('startScreen')">← Back</button><h2>Settings</h2></div>
+  <div class="box">
+    <div class="setting-row">
+      <div class="setting-label"><div class="sl-title">🔊 Sound Effects</div><div class="sl-sub">Correct, wrong, level up sounds</div></div>
+      <button class="toggle on" id="togSound" onclick="toggleSetting('sound')"></button>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label"><div class="sl-title">📳 Vibration</div><div class="sl-sub">Haptic feedback on answers</div></div>
+      <button class="toggle on" id="togVibrate" onclick="toggleSetting('vibrate')"></button>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label"><div class="sl-title">🌙 Dark Mode</div><div class="sl-sub">Always on for now</div></div>
+      <button class="toggle on" style="opacity:0.5;cursor:default"></button>
+    </div>
+  </div>
+  <div class="box">
+    <div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Data</div>
+    <button class="btn-secondary" onclick="resetStats()">🗑️ Reset Statistics</button>
+  </div>
+  <div style="text-align:center;font-size:12px;color:#333;margin-top:10px">What's Missing? v1.0.1</div>
+</div>
+
+<script>
+// ── EMOJIS ──
+var EM=["🍎","🐶","🚗","🏀","🌙","🍕","🦊","🎸","🌈","🐬","🍦","🦁","✈️","🌺","🍉","🐸","🚀","🎃","🐙","🦋","🍋","🐻","🎮","🌍","🍓","🦄","🔥","🌊","🐝","🎈","🍄","🦀","🎻","⭐","🍇","🐧","🚂","🌵","🦉","🍑","🐯","🏆","🌻","🍒","🐳","🚁","🍜","🫐","🥑","🦈","🌮","🎲","🪄","🦚","🍩","🐲","🌸","🦩","🍔","🎀","🐊","🍭","🦜","🫧","🍿","🧸","🌞","🎪","🪸","🐠"];
+
+// ── GAME STATE ──
+var sc=0,str=0,maxStr=0,bt=0,lv=1,lives=3,canAns=false,tmr=null,timerInterval=null;
+var sessionWrong=0;
+var curE=[],missE="",shownE=[],opts=[];
+var gameMode="classic"; // classic | timeattack | sudden
+var timeLeft=30;
+
+// ── PERSISTENT STATS ──
+var stats={games:0,correct:0,wrong:0,bestScore:0,bestLevel:1,bestStreak:0,dailyDone:0,dailyDate:"",achievements:{},gold:0};
+var settings={sound:true,vibrate:true};
+loadData();
+
+// ── ACHIEVEMENTS ──
+var ACHIEVS=[
+  {id:"first",icon:"🎯",name:"First Blood",desc:"Get your first correct answer",check:function(){return stats.correct>=1}},
+  {id:"ten",icon:"🔟",name:"Level 10",desc:"Reach level 10",check:function(){return stats.bestLevel>=10}},
+  {id:"twenty",icon:"🔢",name:"Level 20",desc:"Reach level 20",check:function(){return stats.bestLevel>=20}},
+  {id:"thirty",icon:"🚀",name:"Level 30",desc:"Reach level 30",check:function(){return stats.bestLevel>=30}},
+  {id:"streak5",icon:"🔥",name:"On Fire",desc:"Get a 5x streak",check:function(){return stats.bestStreak>=5}},
+  {id:"streak10",icon:"💥",name:"Unstoppable",desc:"Get a 10x streak",check:function(){return stats.bestStreak>=10}},
+  {id:"score100",icon:"💯",name:"Century",desc:"Score 100 points",check:function(){return stats.bestScore>=100}},
+  {id:"score500",icon:"⭐",name:"Star Player",desc:"Score 500 points",check:function(){return stats.bestScore>=500}},
+  {id:"games10",icon:"🎮",name:"Gamer",desc:"Play 10 games",check:function(){return stats.games>=10}},
+  {id:"daily",icon:"📅",name:"Daily Warrior",desc:"Complete a daily challenge",check:function(){return stats.dailyDone>=DAILY.goal}},
+  {id:"sudden",icon:"💀",name:"Daredevil",desc:"Play Sudden Death mode",check:function(){return gameMode=="sudden"}},
+  {id:"perfect",icon:"👑",name:"Perfect Run",desc:"Reach level 20 without a mistake",check:function(){return sessionWrong===0&&lv>=20}}
+];
+
+// ── DAILY CHALLENGE ──
+var DAILY={goal:100,bonus:100};
+function dailyKey(){return new Date().toISOString().slice(0,10)}
+function dailyProgress(){
+  if(stats.dailyDate!==dailyKey()) return 0;
+  return Math.min(stats.dailyDone,DAILY.goal);
+}
+function updateDailyBanner(){
+  var prog=dailyProgress();
+  var pct=(prog/DAILY.goal)*100;
+  var banner=document.getElementById("dailyBanner");
+  if(!banner)return;
+  banner.style.display="block";
+  document.getElementById("dailyFill").style.width=Math.min(pct,100)+"%";
+  document.getElementById("dailyBannerTitle").textContent=curLang==="tr"?"GÜNLÜK GÖREV":"DAILY GOAL";
+  var sub=document.getElementById("dailySubDesc");
+  if(sub)sub.textContent=L().dailySubDesc;
+  var doneText=prog>=DAILY.goal?(curLang==="tr"?"✅ Tamamlandı!":"✅ Done!"):prog+"/"+DAILY.goal+" 🪙";
+  document.getElementById("dailyDesc").textContent=doneText;
+}
+
+// ── SAVE / LOAD ──
+function saveData(){
+  try{localStorage.setItem("wm_stats",JSON.stringify(stats));localStorage.setItem("wm_settings",JSON.stringify(settings));}catch(e){}
+}
+function loadData(){
+  try{
+    var s=localStorage.getItem("wm_stats");if(s)stats=JSON.parse(s);
+    var se=localStorage.getItem("wm_settings");if(se)settings=JSON.parse(se);
+  }catch(e){}
+  bt=stats.bestScore||0;
+}
+
+// ── HELPERS ──
+function cnt(){return lv<=5?3:lv<=10?4:lv<=15?5:lv<=20?6:lv<=25?7:8}
+function pts(){return lv<=5?10:lv<=10?20:lv<=15?30:lv<=20?40:lv<=25?50:60}
+function badge(){var n=cnt();return n==3?L().levelBadgeItems(3)+" 🟢":n==4?L().levelBadgeItems(4)+" 🟡":n==5?L().levelBadgeItems(5)+" 🟠":n==6?L().levelBadgeItems(6)+" 🔴":n==7?L().levelBadgeItems(7)+" 🟣":L().levelBadgeItems(8)+" ⚫"}
+function sz(){var n=cnt();return n<=3?90:n<=4?84:n<=5?76:n<=6?68:n<=7?60:54}
+function fs(){var n=cnt();return n<=3?44:n<=4?40:n<=5?34:n<=6?30:n<=7?26:22}
+function okMsg(){if(lv<=11)return"Great! 🌟";if(lv<=21)return"Excellent! ✨";if(lv<=31)return"Legendary! 🔥";return"Extraordinary! 💎";}
+function shuf(a){var b=a.slice(),t,j;for(var i=b.length-1;i>0;i--){j=Math.floor(Math.random()*(i+1));t=b[i];b[i]=b[j];b[j]=t;}return b}
+
+// ── SOUND ──
+function playSound(type){
+  if(!settings.sound)return;
+  try{
+    var c=new(window.AudioContext||window.webkitAudioContext)();
+    if(type=="tick"){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=1100;g.gain.setValueAtTime(0.2,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.1);o.start();o.stop(c.currentTime+0.1);}
+    else if(type=="win"){[523,659,784].forEach(function(f,i){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;var t=c.currentTime+i*0.1;g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);o.start(t);o.stop(t+0.3);});}
+    else if(type=="levelup"){[523,659,784,1047].forEach(function(f,i){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;var t=c.currentTime+i*0.08;g.gain.setValueAtTime(0.2,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);o.start(t);o.stop(t+0.3);});}
+    else if(type=="lose"){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=200;o.type="sawtooth";g.gain.setValueAtTime(0.18,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.4);o.start();o.stop(c.currentTime+0.4);}
+    else if(type=="gameover"){[300,250,200,150].forEach(function(f,i){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.type="sawtooth";var t=c.currentTime+i*0.12;g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);o.start(t);o.stop(t+0.3);});}
+    else if(type=="achieve"){[784,1047,1319].forEach(function(f,i){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;var t=c.currentTime+i*0.1;g.gain.setValueAtTime(0.2,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);o.start(t);o.stop(t+0.3);});}
+  }catch(e){}
+}
+
+// ── VIBRATION ──
+function vibrate(pattern){
+  if(!settings.vibrate)return;
+  try{if(navigator.vibrate)navigator.vibrate(pattern);}catch(e){}
+}
+
+// ── TOAST ──
+function showToast(msg){
+  var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  setTimeout(function(){t.classList.remove("show");},2000);
+}
+
+// ── SCREEN NAV ──
+function goScreen(id){
+  var screens=["startScreen","gameScreen","overScreen","statsScreen","howScreen","settingsScreen","modesScreen"];
+  for(var i=0;i<screens.length;i++) document.getElementById(screens[i]).style.display="none";
+  // startScreen uses flex layout
+  document.getElementById(id).style.display=(id==="startScreen")?"flex":"block";
+  window.scrollTo(0,0);
+  if(id=="startScreen"){updateDailyBanner();refreshBestRow();updateGoldDisplay();}
+  if(id=="statsScreen")refreshStats();
+  if(id=="settingsScreen")refreshSettings();
+}
+
+// ── BACK BUTTON HANDLER ──
+function handleBackButton(){
+  var isTR=curLang==="tr";
+
+  // Eğer herhangi bir popup açıksa kapat
+  var popups=["exitAppPopup","resetConfirmPopup","endConfirmPopup","introPopup","sharePopup"];
+  for(var i=0;i<popups.length;i++){
+    var p=document.getElementById(popups[i]);
+    if(p&&(p.style.display==="flex"||p.classList.contains("show"))){
+      p.style.display="none";
+      p.classList.remove("show");
+      return;
+    }
+  }
+
+  var currentScreen=null;
+  var screens=["gameScreen","overScreen","statsScreen","howScreen","settingsScreen","modesScreen","startScreen"];
+  for(var i=0;i<screens.length;i++){
+    var el=document.getElementById(screens[i]);
+    if(el&&el.style.display!=="none"){currentScreen=screens[i];break;}
+  }
+
+  if(currentScreen==="gameScreen"){
+    document.getElementById("endConfirmTitle").textContent=isTR?"Oyundan Çık?":"Exit Game?";
+    document.getElementById("endConfirmText").textContent=isTR?"Oyundan çıkmak istediğine emin misin? İlerlemeniz kaydedilmeyecek.":"Are you sure you want to exit? Your progress will not be saved.";
+    document.getElementById("endConfirmCancel").textContent=isTR?"Devam Et":"Keep Playing";
+    document.getElementById("endConfirmOk").textContent=isTR?"Çık":"Exit";
+    document.getElementById("endConfirmPopup").style.display="flex";
+    return;
+  }
+
+  if(currentScreen&&currentScreen!=="startScreen"){
+    goScreen("startScreen");
+    history.pushState({screen:"startScreen"},document.title);
+    return;
+  }
+
+  // Ana menüde — çıkış popup'ı
+  document.getElementById("exitAppTitle").textContent=isTR?"Uygulamadan Çık?":"Exit App?";
+  document.getElementById("exitAppText").textContent=isTR?"Oyundan çıkmak istediğine emin misin?":"Are you sure you want to exit?";
+  document.getElementById("exitAppCancel").textContent=isTR?"Hayır":"No";
+  document.getElementById("exitAppOk").textContent=isTR?"Evet, Çık":"Yes, Exit";
+  document.getElementById("exitAppPopup").style.display="flex";
+}
+
+window.addEventListener("popstate",function(e){
+  history.pushState({screen:"app"},document.title);
+  handleBackButton();
+});
+
+// ── MODE SELECT ──
+function selectMode(m){
+  gameMode=m;
+  document.getElementById("modeClassic").classList.remove("selected");
+  document.getElementById("modeTime").classList.remove("selected");
+  document.getElementById("modeSudden").classList.remove("selected");
+  if(m=="classic")document.getElementById("modeClassic").classList.add("selected");
+  if(m=="timeattack")document.getElementById("modeTime").classList.add("selected");
+  if(m=="sudden")document.getElementById("modeSudden").classList.add("selected");
+}
+
+// ── START / RESTART ──
+function startGame(){
+  sc=0;str=0;maxStr=0;lv=1;sessionWrong=0;
+  lives=gameMode=="sudden"?1:gameMode=="timeattack"?0:3;
+  // Show intro popup if not dismissed
+  var dontShow=localStorage.getItem("wm_intro_skip")==="1";
+  if(!dontShow){
+    applyIntroLang();
+    var popup=document.getElementById("introPopup");
+    popup.style.display="flex";
+    document.getElementById("introDontShow").checked=false;
+    return; // actual game start happens in confirmStartGame()
+  }
+  doStartGame();
+}
+
+function applyIntroLang(){
+  var isTR=curLang==="tr";
+  document.getElementById("introTitle").textContent=isTR?"Nasıl Oynanır":"How to Play";
+  document.getElementById("introText").textContent=isTR?
+    "Birazdan nesnelerden biri kaybolacak, hangi nesnenin kaybolduğunu bulmalısın.":
+    "One of the items will disappear. You need to find which one is missing.";
+  document.getElementById("introDontShowLabel").textContent=isTR?"Bir daha gösterme":"Don't show again";
+  document.getElementById("introStartBtn").textContent=isTR?"🎮 Başla!":"🎮 Start!";
+}
+
+function confirmStartGame(){
+  if(document.getElementById("introDontShow").checked){
+    localStorage.setItem("wm_intro_skip","1");
+  }
+  document.getElementById("introPopup").style.display="none";
+  doStartGame();
+}
+
+function doStartGame(){
+  stats.games++;saveData();
+  goScreen("gameScreen");
+  document.getElementById("timerWrap").style.display=gameMode=="timeattack"?"block":"none";
+  document.getElementById("livesRow").style.display=gameMode=="timeattack"?"none":"block";
+  upUI();newRound();
+  if(gameMode=="timeattack")startTimer();
+}
+
+function restartGame(){
+  sc=0;str=0;maxStr=0;lv=1;sessionWrong=0;
+  lives=gameMode=="sudden"?1:gameMode=="timeattack"?0:3;
+  stats.games++;saveData();
+  goScreen("gameScreen");
+  document.getElementById("timerWrap").style.display=gameMode=="timeattack"?"block":"none";
+  document.getElementById("livesRow").style.display=gameMode=="timeattack"?"none":"block";
+  upUI();newRound();
+  if(gameMode=="timeattack")startTimer();
+}
+
+function goMenu(){
+  if(timerInterval)clearInterval(timerInterval);
+  goScreen("startScreen");
+}
+
+// ── END CONFIRM ──
+function endGame(){
+  var isTR=curLang==="tr";
+  document.getElementById("endConfirmTitle").textContent=isTR?"Oyunu Sonlandır?":"End Game?";
+  document.getElementById("endConfirmText").textContent=isTR?"İlerlemeniz kaydedilmeyecek.":"Your progress will not be saved.";
+  document.getElementById("endConfirmCancel").textContent=isTR?"Devam Et":"Keep Playing";
+  document.getElementById("endConfirmOk").textContent=isTR?"Sonlandır":"End Game";
+  document.getElementById("endConfirmPopup").style.display="flex";
+}
+
+function closeEndConfirm(){
+  document.getElementById("endConfirmPopup").style.display="none";
+}
+
+function doEndGame(){
+  closeEndConfirm();
+  if(tmr)clearTimeout(tmr);
+  if(timerInterval)clearInterval(timerInterval);
+  canAns=false;
+  trigOver(curLang==="tr"?"Oyun manuel sonlandırıldı":"Game ended manually");
+}
+
+// ── TIME ATTACK ──
+function startTimer(){
+  timeLeft=30;
+  updateTimerUI();
+  if(timerInterval)clearInterval(timerInterval);
+  timerInterval=setInterval(function(){
+    timeLeft-=0.1;
+    if(timeLeft<=0){
+      clearInterval(timerInterval);
+      canAns=false;
+      if(tmr)clearTimeout(tmr);
+      trigOver(curLang==="tr"?"Süre doldu!":"Time's up!");
+    } else updateTimerUI();
+  },100);
+}
+function updateTimerUI(){
+  document.getElementById("timerFill").style.width=Math.max(0,(timeLeft/30)*100)+"%";
+  document.getElementById("timerNum").textContent=Math.ceil(timeLeft)+"s";
+  if(timeLeft<=10) document.getElementById("timerFill").style.background="linear-gradient(90deg,#ef233c,#ff3a7c)";
+}
+
+// ── ROUND ──
+function newRound(){
+  if(tmr)clearTimeout(tmr);
+  canAns=false;
+  window.scrollTo(0,0);
+  hide("rbox");hide("qtext");hide("opts");
+  document.getElementById("grid").innerHTML="";
+  document.getElementById("phase").textContent=L().memorizePhase;
+
+  var pool=shuf(EM);
+  curE=pool.slice(0,cnt());
+  buildGrid(curE);
+
+  var showTime=Math.max(900,1800-lv*18);
+  tmr=setTimeout(function(){
+    document.body.style.background="#ddd";
+    playSound("tick");
+    setTimeout(function(){
+      document.body.style.background="#0a0a14";
+      var idx=Math.floor(Math.random()*curE.length);
+      missE=curE[idx];shownE=[];
+      for(var i=0;i<curE.length;i++){if(i!=idx)shownE.push(curE[i]);}
+      var used={};for(var i=0;i<curE.length;i++)used[curE[i]]=1;
+      var traps=[];for(var i=0;i<pool.length&&traps.length<2;i++){if(!used[pool[i]])traps.push(pool[i]);}
+      opts=shuf([missE,traps[0],traps[1]]);
+      document.getElementById("phase").textContent=L().answerPhase;
+      buildGrid(shownE);
+      setTimeout(function(){document.getElementById("qtext").innerHTML=L().whichMissing;show("qtext");showF("opts");buildOpts();canAns=true;},400);
+    },140);
+  },showTime);
+}
+
+function buildGrid(arr){
+  var g=document.getElementById("grid");g.innerHTML="";
+  var s=sz(),f=fs();
+  for(var i=0;i<arr.length;i++){
+    var d=document.createElement("div");d.className="card";
+    d.style.width=s+"px";d.style.height=s+"px";d.style.fontSize=f+"px";
+    d.textContent=arr[i];g.appendChild(d);
+  }
+}
+function buildOpts(){
+  var row=document.getElementById("opts");row.innerHTML="";
+  var s=sz(),f=fs();
+  for(var i=0;i<opts.length;i++){
+    (function(o){
+      var b=document.createElement("button");b.className="obtn";b.textContent=o;
+      b.style.width=s+"px";b.style.height=s+"px";b.style.fontSize=f+"px";
+      b.onclick=function(){pick(o,b);};row.appendChild(b);
+    })(opts[i]);
+  }
+}
+
+// ── ANSWER ──
+function pick(o,btn){
+  if(!canAns)return;
+  canAns=false;
+  var btns=document.querySelectorAll(".obtn");
+  for(var i=0;i<btns.length;i++)btns[i].onclick=null;
+
+  var newAchieve="";
+
+  if(o==missE){
+    btn.className="obtn ok";
+    vibrate(50);
+    str++;if(str>maxStr)maxStr=str;var g=pts();sc+=g;if(sc>bt)bt=sc;
+    if(str>0&&str%10===0){sc+=50;if(sc>bt)bt=sc;showToast(L().streakBonus(str));}
+    stats.correct++;
+    if(str>stats.bestStreak)stats.bestStreak=str;
+    // daily challenge
+    if(stats.dailyDate!==dailyKey()){stats.dailyDate=dailyKey();stats.dailyDone=0;}
+    stats.dailyDone++;
+    if(stats.dailyDone==DAILY.goal){
+      stats.gold=(stats.gold||0)+DAILY.bonus;
+      saveData();
+      updateGoldDisplay();
+      showToast(L().dailyComplete(DAILY.bonus));
+    }
+    lv++;if(lv>stats.bestLevel)stats.bestLevel=lv;
+    if(sc>stats.bestScore)stats.bestScore=sc;
+    saveData();upUI();
+    // check achievements
+    newAchieve=checkAchievements();
+    playSound(lv%10==1&&lv>1?"levelup":"win");
+    showRes(true,g,newAchieve);
+  } else {
+    btn.className="obtn no";
+    vibrate([100,50,100]);
+    for(var i=0;i<btns.length;i++){if(btns[i].textContent==missE)btns[i].className="obtn ok";}
+    str=0;stats.wrong++;sessionWrong++;
+    if(gameMode=="sudden"||gameMode=="timeattack"){
+      lives=0;
+    } else {
+      lives--;
+    }
+    saveData();upUI();
+    playSound("lose");
+    if(lives<=0){
+      showRes(false,0,"");
+      setTimeout(function(){trigOver(gameMode=="sudden"?L().reasonSudden:gameMode=="timeattack"?L().reasonTime:L().reasonLives);},1400);
+    } else {
+      showRes(false,0,"");
+    }
+  }
+}
+
+// ── ACHIEVEMENTS CHECK ──
+function checkAchievements(){
+  var newOne="";
+  for(var i=0;i<ACHIEVS.length;i++){
+    var a=ACHIEVS[i];
+    if(!stats.achievements[a.id]&&a.check()){
+      stats.achievements[a.id]=true;
+      newOne=a.icon+" "+a.name;
+      playSound("achieve");
+      saveData();
+    }
+  }
+  return newOne;
+}
+
+// ── RESULT BOX ──
+function showRes(ok,gained,achieve){
+  var tc=ok&&(lv==6||lv==11||lv==16||lv==21||lv==26);
+  document.getElementById("rico").textContent=tc?"🆙":ok?"🎯":"💔";
+  var okMsgs=L().okMsgs;
+  document.getElementById("rtitle").textContent=tc?L().difficultyUp(lv):ok?okMsgs[Math.floor(Math.random()*okMsgs.length)]:(lives<=0?L().lastLifeGone:L().wrong);
+  document.getElementById("rtitle").style.color=ok?(tc?"#a78bfa":"#06d6a0"):"#ef233c";
+  document.getElementById("rsub").textContent=ok?("+"+gained+" pts"+(str>1?" · "+str+"x "+(curLang==="tr"?"seri":"streak"):"")):(L().answerLabel+missE+(lives>0?L().livesLeft(lives):L().gameEnding));
+  var lu=document.getElementById("rlup");
+  if(tc){lu.style.display="block";lu.textContent=L().nowItems(cnt());}else lu.style.display="none";
+  var ra=document.getElementById("rachieve");
+  if(achieve){ra.style.display="block";ra.textContent=L().achieveUnlocked+achieve;}else ra.style.display="none";
+  document.getElementById("nxtBtn").style.display=(!ok&&lives<=0)?"none":"block";
+  show("rbox");
+  setTimeout(function(){document.getElementById("rbox").scrollIntoView({behavior:"smooth",block:"nearest"});},200);
+}
+
+function nextRound(){hide("rbox");newRound();}
+
+// ── GAME OVER ──
+var pendingOverReason="";
+
+function trigOver(reason){
+  if(timerInterval)clearInterval(timerInterval);
+  playSound("gameover");
+  vibrate([200,100,200]);
+  lastScore=sc;lastLevel=lv;lastStreak=maxStr;
+  pendingOverReason=reason;
+
+  // Gold earned
+  var goldEarned=Math.floor(sc/10);
+  if(goldEarned>0){
+    stats.gold=(stats.gold||0)+goldEarned;
+    saveData();
+    updateGoldDisplay();
+  }
+
+  // Show gold popup first if earned, then check extra life
+  if(goldEarned>0){
+    showGoldPopup(goldEarned,function(){
+      checkExtraLife(reason);
+    });
+  } else {
+    checkExtraLife(reason);
+  }
+}
+
+function showGoldPopup(earned,callback){
+  var isTR=curLang==="tr";
+  var popup=document.getElementById("goldPopup");
+  var box=document.getElementById("goldPopupBox");
+  document.getElementById("goldPopupEarned").textContent="+"+earned;
+  document.getElementById("goldPopupLabel").textContent=isTR?"altın kazandın!":"gold earned!";
+  document.getElementById("goldPopupTotal").textContent=isTR?"Toplam Altın":"Total Gold";
+  document.getElementById("goldPopupTotalVal").textContent="🪙 "+(stats.gold||0);
+  document.getElementById("goldPopupTap").textContent=isTR?"Devam etmek için ekrana dokun":"Tap anywhere to continue";
+  popup.style.display="flex";
+  // Animate in
+  setTimeout(function(){box.style.transform="scale(1)";box.style.opacity="1";},50);
+  // Play coin sound
+  playSound("correct");
+  // Store callback
+  popup._callback=callback;
+}
+
+function closeGoldPopup(){
+  var popup=document.getElementById("goldPopup");
+  var box=document.getElementById("goldPopupBox");
+  box.style.transform="scale(0.8)";box.style.opacity="0";
+  setTimeout(function(){
+    popup.style.display="none";
+    box.style.transform="scale(0.8)";box.style.opacity="0";
+    if(popup._callback)popup._callback();
+  },300);
+}
+
+function checkExtraLife(reason){
+  var isTR=curLang==="tr";
+  var isManual=reason===(isTR?"Oyun manuel sonlandırıldı":"Game ended manually");
+  // Only offer in classic mode, not manual end, and player has enough gold
+  if(gameMode==="classic"&&!isManual&&(stats.gold||0)>=EXTRA_LIFE_COST){
+    showExtraLifePopup();
+  } else {
+    showGameOverScreen();
+  }
+}
+
+function showExtraLifePopup(){
+  var isTR=curLang==="tr";
+  document.getElementById("extraLifeTitle").textContent=isTR?"Devam etmek ister misin?":"Continue playing?";
+  document.getElementById("extraLifeDesc").textContent=isTR?
+    "1.000 🪙 altın karşılığında 1 can al ve oyuna kaldığın yerden devam et.":
+    "Spend 1,000 🪙 gold for an extra life and continue where you left off.";
+  document.getElementById("extraLifeGoldInfo").textContent="🪙 "+(stats.gold||0)+" "+(isTR?"altınınız var":"gold available");
+  document.getElementById("extraLifeYes").textContent=isTR?"❤️ 1.000 🪙 Harca ve Devam Et":"❤️ Spend 1,000 🪙 & Continue";
+  document.getElementById("extraLifeNo").textContent=isTR?"Hayır, Oyunu Bitir":"No, End Game";
+  document.getElementById("extraLifePopup").style.display="flex";
+}
+
+function declineExtraLife(){
+  document.getElementById("extraLifePopup").style.display="none";
+  showGameOverScreen();
+}
+
+function showGameOverScreen(){
+  var isTR=curLang==="tr";
+  document.getElementById("goSc").textContent=lastScore;
+  document.getElementById("goLv").textContent=lastLevel;
+  document.getElementById("goBt").textContent=bt;
+  document.getElementById("goReason").textContent=pendingOverReason;
+
+  // Gold earned row
+  var goldEarned=Math.floor(lastScore/10);
+  var goldRow=document.getElementById("goldEarnedRow");
+  if(goldEarned>0){
+    goldRow.style.display="block";
+    goldRow.innerHTML="<span style='font-size:22px'>🪙</span> +"+goldEarned+" "+(isTR?"altın kazandın!":"gold earned!");
+  } else {
+    goldRow.style.display="none";
+  }
+
+  // Achievements
+  var list=document.getElementById("achievList");list.innerHTML="";
+  for(var i=0;i<ACHIEVS.length;i++){
+    var a=ACHIEVS[i];var span=document.createElement("span");
+    span.className="achiev-badge"+(stats.achievements[a.id]?"":" locked");
+    span.textContent=(stats.achievements[a.id]?a.icon:"🔒")+" "+a.name;
+    list.appendChild(span);
+  }
+  goScreen("overScreen");
+}
+
+var EXTRA_LIFE_COST=1000;
+
+function buyExtraLife(){
+  if((stats.gold||0)<EXTRA_LIFE_COST)return;
+  stats.gold-=EXTRA_LIFE_COST;
+  lives=1;
+  saveData();
+  updateGoldDisplay();
+  document.getElementById("extraLifePopup").style.display="none";
+  goScreen("gameScreen");
+  canAns=false;
+  hide("rbox");
+  showToast(curLang==="tr"?"❤️ 1 Can Eklendi! Devam et!":"❤️ Extra life added! Keep going!");
+  setTimeout(function(){newRound();},600);
+}
+
+// ── UI UPDATE ──
+function upUI(){
+  document.getElementById("scoreV").textContent=sc;
+  document.getElementById("streakV").textContent=str>0?str+"🔥":"0";
+  document.getElementById("bestV").textContent=bt;
+  document.getElementById("lvlTxt").textContent=L().levelWord+" "+lv;
+  document.getElementById("lvlBadge").textContent=badge();
+  var ts=lv<=5?1:lv<=10?6:lv<=15?11:lv<=20?16:lv<=25?21:26;
+  document.getElementById("pb").style.width=Math.min(100,((lv-ts)/5)*100)+"%";
+  if(gameMode!=="timeattack"){
+    var h="";for(var i=0;i<3;i++)h+=(i<lives?"❤️":"🖤");
+    document.getElementById("livesRow").textContent=h;
+  }
+}
+
+// ── STATS SCREEN ──
+function refreshStats(){
+  document.getElementById("st_games").textContent=stats.games;
+  document.getElementById("st_best").textContent=stats.bestScore;
+  document.getElementById("st_correct").textContent=stats.correct;
+  document.getElementById("st_streak").textContent=stats.bestStreak;
+  document.getElementById("st_level").textContent=stats.bestLevel;
+  document.getElementById("st_daily").textContent=stats.dailyDone;
+  var total=stats.correct+stats.wrong;
+  var acc=total>0?Math.round((stats.correct/total)*100):0;
+  document.getElementById("st_acc").textContent=acc+"%";
+  document.getElementById("accFill").style.width=acc+"%";
+  var af=document.getElementById("achievFull");af.innerHTML="";
+  for(var i=0;i<ACHIEVS.length;i++){
+    var a=ACHIEVS[i];var span=document.createElement("span");
+    span.className="achiev-badge"+(stats.achievements[a.id]?"":" locked");
+    span.title=a.desc;
+    span.textContent=(stats.achievements[a.id]?a.icon:"🔒")+" "+a.name;
+    af.appendChild(span);
+  }
+}
+
+// ── SETTINGS ──
+function refreshSettings(){
+  document.getElementById("togSound").className="toggle"+(settings.sound?" on":"");
+  document.getElementById("togVibrate").className="toggle"+(settings.vibrate?" on":"");
+}
+function toggleSetting(k){
+  settings[k]=!settings[k];saveData();refreshSettings();
+  showToast(k=="sound"?(settings.sound?L().soundOn:L().soundOff):(settings.vibrate?L().vibOn:L().vibOff));
+}
+function resetStats(){
+  var isTR=curLang==="tr";
+  document.getElementById("resetConfirmTitle").textContent=isTR?"İstatistikleri Sıfırla":"Reset Statistics";
+  document.getElementById("resetConfirmText").textContent=isTR?
+    "Tüm skorlar, başarımlar ve istatistikler silinecek. Bu işlem geri alınamaz.":
+    "All scores, achievements and statistics will be deleted. This cannot be undone.";
+  document.getElementById("resetConfirmCancel").textContent=isTR?"İptal":"Cancel";
+  document.getElementById("resetConfirmOk").textContent=isTR?"Sıfırla":"Reset";
+  document.getElementById("resetConfirmPopup").style.display="flex";
+}
+
+function updateGoldDisplay(){
+  var isTR=curLang==="tr";
+  var el=document.getElementById("goldDisplay");
+  if(el)el.textContent="🪙 "+(stats.gold||0)+" "+(isTR?"altın":"gold");
+}
+
+function doResetStats(){
+  document.getElementById("resetConfirmPopup").style.display="none";
+  stats={games:0,correct:0,wrong:0,bestScore:0,bestLevel:1,bestStreak:0,dailyDone:0,dailyDate:"",achievements:{},gold:0};
+  bt=0;
+  saveData();refreshStats();refreshBestRow();updateGoldDisplay();
+  showToast(L().resetDone);
+}
+
+function closeResetConfirm(){
+  document.getElementById("resetConfirmPopup").style.display="none";
+}
+
+// ── BEST ROW ──
+function refreshBestRow(){
+  var show=document.getElementById("bestShow");
+  var lbl=document.getElementById("bestLabel");
+  var row=document.getElementById("bestRow");
+  if(show)show.textContent=stats.bestScore||0;
+  if(lbl)lbl.textContent=L().bestScoreSt;
+  if(row)row.style.display="flex";
+}
+
+// ── SHARE ──
+var lastScore=0,lastLevel=1,lastStreak=0;
+function openShare(){
+  var modeNames=L().modeNames;
+  var mode=modeNames[gameMode]||gameMode;
+  var displayScore=document.getElementById("overScreen").style.display!="none"?lastScore:sc;
+  var displayLevel=document.getElementById("overScreen").style.display!="none"?lastLevel:lv;
+  var displayStreak=document.getElementById("overScreen").style.display!="none"?lastStreak:str;
+  var text=L().shareText(displayScore,displayLevel,displayStreak,mode);
+  document.getElementById("shareText").textContent=text;
+  document.getElementById("sharePopup").classList.add("show");
+}
+function closeShare(){document.getElementById("sharePopup").classList.remove("show");}
+function copyShare(){
+  var text=document.getElementById("shareText").textContent;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      showToast(L().copied);
+      closeShare();
+    }).catch(function(){fallbackCopy(text);});
+  } else {
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text){
+  var ta=document.createElement("textarea");
+  ta.value=text;
+  ta.style.position="fixed";ta.style.top="0";ta.style.left="0";ta.style.opacity="0";
+  document.body.appendChild(ta);
+  ta.focus();ta.select();
+  try{document.execCommand("copy");showToast(L().copied);closeShare();}
+  catch(e){showToast("Long press the text above to copy");}
+  document.body.removeChild(ta);
+}
+
+// ── SHOW / HIDE ──
+function show(id){document.getElementById(id).style.display="block"}
+function hide(id){document.getElementById(id).style.display="none"}
+function showF(id){document.getElementById(id).style.display="flex"}
+
+// ── LANGUAGE SYSTEM ──
+var LANG={
+  en:{
+    memoryGame:"MEMORY GAME",dailyTitle:"🌟 Daily Challenge",dailyDesc:"Get 100 correct answers today",dailySubDesc:"Give 100 correct answers today",
+    gameModes:"Game Modes",statistics:"Statistics",howToPlay:"How to Play",settings:"Settings",
+    startPlaying:"🎮 START PLAYING",bestScoreLabel:"Best Score: ",back:"← Back",
+    modeClassicName:"Classic",modeClassicDesc:"3 lives · level up every correct answer · unlimited time",
+    modeTimeName:"Time Attack",modeTimeDesc:"30 seconds · answer as many as you can · no lives",
+    modeSuddenName:"Sudden Death",modeSuddenDesc:"1 mistake and it's over · no lives · high risk, high reward",
+    startSelected:"Start Selected Mode",
+    goldInfo1:"Every 10 pts = 1 🪙 · Daily goal = +100 🪙",
+    goldInfo2:"1,000 🪙 = ❤️ Extra Life (usable before game ends)",
+    goldInfoTitle:"Gold System",goldInfoLine1:"🎯 Every 10 pts → 1 🪙 gold",goldInfoLine2:"📅 Complete daily goal → +100 🪙",goldInfoLine3:"❤️ 1,000 🪙 = Extra Life",goldInfoLine4:"Can be used when game ends",goldInfoClose:"OK",
+    shareBtnLbl:"↗ Share",endBtnLbl:"✕ End",
+    tiers:[
+      {tl:"🟢 Level 1–5",td:"3 items · +10 pts"},
+      {tl:"🟡 Level 6–10",td:"4 items · +20 pts"},
+      {tl:"🟠 Level 11–15",td:"5 items · +30 pts"},
+      {tl:"🔴 Level 16–20",td:"6 items · +40 pts"},
+      {tl:"🟣 Level 21–25",td:"7 items · +50 pts"},
+      {tl:"⚫ Level 26+",td:"8 items · +60 pts"}
+    ],
+    whichMissing:"Which one is <span>missing</span>?",
+    continueBtn:"Continue →",
+    gameOver:"Game Over!",reasonLives:"You ran out of lives",reasonSudden:"One mistake — game over!",reasonTime:"Time's up!",
+    goScore:"Score",goLevel:"Level",goBest:"Best",
+    achievements:"Achievements",shareResult:"↗ Share Result",playAgain:"🔄 Play Again",mainMenu:"🏠 Main Menu",
+    statsTitle:"Statistics",totalGames:"Total Games",bestScoreSt:"Best Score",correctLbl:"Correct",
+    bestStreak:"Best Streak",bestLevel:"Best Level",dailyDone:"Daily Done",accuracy:"Accuracy",
+    achievementsLabel:"Achievements",howTitle:"How to Play",
+    how1t:"Memorize the items",how1d:"A set of emoji items appears on screen. Study them carefully — you have limited time!",
+    how2t:"The screen flashes",how2d:"The screen blinks and one item disappears. Pay close attention!",
+    how3t:"Find what's missing",how3d:"Three options appear below. Tap the one that was removed.",
+    how4t:"Level up!",how4d:"Every correct answer levels you up. Higher levels = more items + less time to memorize.",
+    how5t:"Don't lose all lives",how5d:"You have 3 lives in Classic mode. 3 wrong answers and it's game over!",
+    proTips:"💡 Pro Tips",
+    proTipsText:"• Focus on the shape and color of each emoji<br>• At higher levels, scan left-to-right like reading<br>• In Time Attack, speed matters more than accuracy<br>• Sudden Death rewards calm, careful thinking",
+    settingsTitle:"Settings",soundTitle:"🔊 Sound Effects",soundSub:"Correct, wrong, level up sounds",
+    vibTitle:"📳 Vibration",vibSub:"Haptic feedback on answers",
+    darkTitle:"🌙 Dark Mode",darkSub:"Always on for now",dataLabel:"Data",
+    resetBtn:"🗑️ Reset Statistics",resetConfirm:"Reset all statistics? This cannot be undone.",resetDone:"Statistics reset",
+    soundOn:"🔊 Sound on",soundOff:"🔇 Sound off",vibOn:"📳 Vibration on",vibOff:"🔕 Vibration off",
+    shareTitle:"🎮 Share Your Score",shareChallenge:"Challenge your friends!",
+    shareCopy:"📋 Copy",shareClose:"Close",copied:"📋 Copied to clipboard!",
+    shareText:function(sc,lv,st,mode){return "👁️ What's Missing?\n\n🏆 Score: "+sc+"\n📈 Level: "+lv+"\n🔥 Best Streak: "+st+"\n🎮 Mode: "+mode+"\n\nCan you beat me? Play now!";},
+    modeNames:{classic:"Classic",timeattack:"Time Attack",sudden:"Sudden Death"},
+    levelWord:"Level",levelBadgeItems:function(n){return n+" items"},
+    wrong:"Wrong!",lastLifeGone:"Last Life Gone!",difficultyUp:function(lv){return "Level "+lv+" – Difficulty Up!"},
+    nowItems:function(n){return "🎉 Now "+n+" items to memorize!"},
+    achieveUnlocked:"🏅 Achievement Unlocked: ",
+    streakBonus:function(s){return "🔥 "+s+"x Streak Bonus! +50 pts"},
+    dailyComplete:function(b){return "🌟 Daily Challenge Complete! +"+b+" 🪙 Gold"},
+    answerLabel:"Answer: ",livesLeft:function(n){return " · "+n+" "+(n==1?"life":"lives")+" left"},
+    gameEnding:" · Game ending…",memorizePhase:"MEMORIZE",answerPhase:"ANSWER",timerSec:function(t){return t+"s"},
+    okMsgs:["Great!","Awesome!","Perfect!","Nice!","Brilliant!","Fantastic!","Superb!","Nailed it!","Excellent!","On fire!"]
+  },
+  tr:{
+    memoryGame:"HAFIZA OYUNU",dailyTitle:"🌟 Günlük Görev",dailyDesc:"Bugün 100 doğru cevap ver",dailySubDesc:"Bugün 100 doğru cevap ver",
+    gameModes:"Oyun Modları",statistics:"İstatistikler",howToPlay:"Nasıl Oynanır",settings:"Ayarlar",
+    startPlaying:"🎮 OYNAMAYA BAŞLA",bestScoreLabel:"En İyi Skor: ",back:"← Geri",
+    modeClassicName:"Klasik",modeClassicDesc:"3 can · her doğru cevap seviye atlatır · süresiz",
+    modeTimeName:"Zamana Karşı",modeTimeDesc:"30 saniye · olabildiğince çok cevapla · can yok",
+    modeSuddenName:"Ani Ölüm",modeSuddenDesc:"1 hata = oyun bitti · can yok · yüksek risk, yüksek ödül",
+    startSelected:"Seçili Modu Başlat",
+    goldInfo1:"Her 10 puan = 1 🪙 · Günlük görev = +100 🪙",
+    goldInfo2:"1.000 🪙 = ❤️ Ekstra Can (oyun bitmeden kullanılabilir)",
+    goldInfoTitle:"Altın Sistemi",goldInfoLine1:"🎯 Her 10 puan → 1 🪙 altın",goldInfoLine2:"📅 Günlük görevi tamamla → +100 🪙",goldInfoLine3:"❤️ 1.000 🪙 = Ekstra Can",goldInfoLine4:"Oyun bittiğinde kullanabilirsin",goldInfoClose:"Tamam",
+    shareBtnLbl:"↗ Paylaş",endBtnLbl:"✕ Bitir",
+    tiers:[
+      {tl:"🟢 Seviye 1–5",td:"3 öğe · +10 puan"},
+      {tl:"🟡 Seviye 6–10",td:"4 öğe · +20 puan"},
+      {tl:"🟠 Seviye 11–15",td:"5 öğe · +30 puan"},
+      {tl:"🔴 Seviye 16–20",td:"6 öğe · +40 puan"},
+      {tl:"🟣 Seviye 21–25",td:"7 öğe · +50 puan"},
+      {tl:"⚫ Seviye 26+",td:"8 öğe · +60 puan"}
+    ],
+    whichMissing:"Hangisi <span>eksik</span>?",
+    continueBtn:"Devam →",
+    gameOver:"Oyun Bitti!",reasonLives:"Canların tükendi",reasonSudden:"Bir hata — oyun bitti!",reasonTime:"Süre doldu!",
+    goScore:"Skor",goLevel:"Seviye",goBest:"En İyi",
+    achievements:"Başarımlar",shareResult:"↗ Sonucu Paylaş",playAgain:"🔄 Tekrar Oyna",mainMenu:"🏠 Ana Menü",
+    statsTitle:"İstatistikler",totalGames:"Toplam Oyun",bestScoreSt:"EN İYİ SKOR",correctLbl:"Doğru",
+    bestStreak:"En İyi Seri",bestLevel:"En İyi Seviye",dailyDone:"Günlük Yapılan",accuracy:"Doğruluk",
+    achievementsLabel:"Başarımlar",howTitle:"Nasıl Oynanır",
+    how1t:"Öğeleri ezberle",how1d:"Ekranda bir dizi emoji belirir. Dikkatlice incele — sınırlı süren var!",
+    how2t:"Ekran yanıp söner",how2d:"Ekran yanıp söner ve bir öğe kaybolur. Dikkatli ol!",
+    how3t:"Eksik olanı bul",how3d:"Aşağıda üç seçenek belirir. Kaybolan öğeye dokun.",
+    how4t:"Seviye atla!",how4d:"Her doğru cevap seni bir seviye yükseltir. Üst seviyelerde daha fazla öğe + daha az süre.",
+    how5t:"Tüm canlarını kaybetme",how5d:"Klasik modda 3 canın var. 3 yanlış cevap ve oyun bitti!",
+    proTips:"💡 Pro İpuçları",
+    proTipsText:"• Her emojinin şekline ve rengine odaklan<br>• Üst seviyelerde soldan sağa tara<br>• Zamana Karşı modunda hız doğruluktan önemlidir<br>• Ani Ölüm sakin ve dikkatli düşünmeyi ödüllendirir",
+    settingsTitle:"Ayarlar",soundTitle:"🔊 Ses Efektleri",soundSub:"Doğru, yanlış, seviye atlama sesleri",
+    vibTitle:"📳 Titreşim",vibSub:"Cevaplarda dokunsal geri bildirim",
+    darkTitle:"🌙 Karanlık Mod",darkSub:"Şimdilik her zaman açık",dataLabel:"Veri",
+    resetBtn:"🗑️ İstatistikleri Sıfırla",resetConfirm:"Tüm istatistikler sıfırlansın mı? Bu geri alınamaz.",resetDone:"İstatistikler sıfırlandı",
+    soundOn:"🔊 Ses açık",soundOff:"🔇 Ses kapalı",vibOn:"📳 Titreşim açık",vibOff:"🔕 Titreşim kapalı",
+    shareTitle:"🎮 Skorunu Paylaş",shareChallenge:"Arkadaşlarına meydan oku!",
+    shareCopy:"📋 Kopyala",shareClose:"Kapat",copied:"📋 Panoya kopyalandı!",
+    shareText:function(sc,lv,st,mode){return "👁️ What's Missing?\n\n🏆 Skor: "+sc+"\n📈 Seviye: "+lv+"\n🔥 En İyi Seri: "+st+"\n🎮 Mod: "+mode+"\n\nBeni geçebilir misin? Hemen oyna!";},
+    modeNames:{classic:"Klasik",timeattack:"Zamana Karşı",sudden:"Ani Ölüm"},
+    levelWord:"Seviye",levelBadgeItems:function(n){return n+" öğe"},
+    wrong:"Yanlış!",lastLifeGone:"Son Can Gitti!",difficultyUp:function(lv){return "Seviye "+lv+" – Zorluk Arttı!"},
+    nowItems:function(n){return "🎉 Artık "+n+" öğe ezberliyorsun!"},
+    achieveUnlocked:"🏅 Başarım Açıldı: ",
+    streakBonus:function(s){return "🔥 "+s+"x Seri Bonusu! +50 puan"},
+    dailyComplete:function(b){return "🌟 Günlük Görev Tamamlandı! +"+b+" 🪙 Altın"},
+    answerLabel:"Cevap: ",livesLeft:function(n){return " · "+n+" can kaldı"},
+    gameEnding:" · Oyun bitiyor…",memorizePhase:"EZBERLE",answerPhase:"CEVAPLA",timerSec:function(t){return t+"sn"},
+    okMsgs:["Harika!","Muhteşem!","Mükemmel!","Güzel!","Parlak!","Süper!","Tam isabet!","Alev alev!","Bravo!","İnanılmaz!"]
+  }
+};
+
+var curLang=localStorage.getItem("wm_lang")||"en";
+function L(){return LANG[curLang];}
+
+function applyLang(){
+  var l=L();
+  // Logo sub
+  var ls=document.getElementById("logoSub");
+  if(ls)ls.textContent=l.memoryGame;
+  // Start button
+  document.getElementById("startBtn").textContent=l.startPlaying;
+  // Bottom nav
+  var bm=document.getElementById("bnavModes");var bs=document.getElementById("bnavStats");
+  var bh=document.getElementById("bnavHow");var bset=document.getElementById("bnavSettings");
+  if(bm)bm.textContent=l.gameModes;if(bs)bs.textContent=l.statistics;
+  if(bh)bh.textContent=l.howToPlay;if(bset)bset.textContent=l.settings;
+  // Best label
+  var bl=document.getElementById("bestLabel");
+  if(bl)bl.textContent=l.bestScoreSt;
+  // Tier cards
+  for(var i=1;i<=6;i++){
+    var tl=document.getElementById("tier"+i+"tl");
+    var td=document.getElementById("tier"+i+"td");
+    if(tl)tl.textContent=l.tiers[i-1].tl;
+    if(td)td.textContent=l.tiers[i-1].td;
+  }
+  // Game HUD labels
+  document.getElementById("shareBtn").textContent=l.shareBtnLbl;
+  document.getElementById("endBtn").textContent=l.endBtnLbl;
+  var sls=document.querySelectorAll(".sl");
+  if(sls[0])sls[0].textContent=l.scoreLbl;
+  if(sls[1])sls[1].textContent=l.streakLbl;
+  if(sls[2])sls[2].textContent=l.bestLbl;
+  // Continue button
+  document.getElementById("nxtBtn").textContent=l.continueBtn;
+  // Question text
+  document.getElementById("qtext").innerHTML=L().whichMissing;
+  // Modes screen
+  document.querySelector("#modeClassic .mode-name").textContent=l.modeClassicName;
+  document.querySelector("#modeClassic .mode-desc").textContent=l.modeClassicDesc;
+  document.querySelector("#modeTime .mode-name").textContent=l.modeTimeName;
+  document.querySelector("#modeTime .mode-desc").textContent=l.modeTimeDesc;
+  document.querySelector("#modeSudden .mode-name").textContent=l.modeSuddenName;
+  document.querySelector("#modeSudden .mode-desc").textContent=l.modeSuddenDesc;
+  document.querySelector("#modesScreen .btn-main").textContent=l.startSelected;
+  document.querySelectorAll(".back-btn").forEach(function(b){b.textContent=l.back;});
+  document.querySelectorAll("h2").forEach(function(h,i){
+    var titles=[l.gameModes,l.statsTitle,l.howTitle,l.settingsTitle];
+    if(titles[i])h.textContent=titles[i];
+  });
+  // Game over screen
+  document.querySelector(".go-title").textContent=l.gameOver;
+  var gls=document.querySelectorAll(".gl");
+  if(gls[0])gls[0].textContent=l.goScore;
+  if(gls[1])gls[1].textContent=l.goLevel;
+  if(gls[2])gls[2].textContent=l.goBest;
+  document.querySelector(".ga-title").textContent=l.achievements;
+  var oMains=document.querySelectorAll("#overScreen .btn-main");
+  if(oMains[0])oMains[0].textContent=l.shareResult;
+  if(oMains[1])oMains[1].textContent=l.playAgain;
+  document.querySelector("#overScreen .btn-secondary").textContent=l.mainMenu;
+  // Stats labels
+  var sbl=document.querySelectorAll(".sb-label");
+  var sbKeys=["totalGames","bestScoreSt","correctLbl","bestStreak","bestLevel","dailyDone"];
+  for(var i=0;i<sbl.length&&i<sbKeys.length;i++)sbl[i].textContent=l[sbKeys[i]];
+  var abLbl=document.querySelector(".ab-label span");
+  if(abLbl)abLbl.textContent=l.accuracy;
+  // How to play
+  var hts=document.querySelectorAll(".ht"),hds=document.querySelectorAll(".hd");
+  var howKeys=["how1","how2","how3","how4","how5"];
+  for(var i=0;i<howKeys.length;i++){
+    if(hts[i])hts[i].textContent=l[howKeys[i]+"t"];
+    if(hds[i])hds[i].textContent=l[howKeys[i]+"d"];
+  }
+  document.querySelector(".pro-tips-title").textContent=l.proTips;
+  document.querySelector(".pro-tips-text").innerHTML=l.proTipsText;
+  // Settings
+  var slt=document.querySelectorAll(".sl-title"),slsub=document.querySelectorAll(".sl-sub");
+  var stKeys=[["soundTitle","soundSub"],["vibTitle","vibSub"],["darkTitle","darkSub"]];
+  for(var i=0;i<stKeys.length;i++){
+    if(slt[i])slt[i].textContent=l[stKeys[i][0]];
+    if(slsub[i])slsub[i].textContent=l[stKeys[i][1]];
+  }
+  document.querySelector("#settingsScreen .btn-secondary").textContent=l.resetBtn;
+  // Share popup
+  document.querySelector(".share-sheet h3").textContent=l.shareTitle;
+  document.querySelector(".share-sheet p").textContent=l.shareChallenge;
+  document.querySelector(".share-copy").textContent=l.shareCopy;
+  document.querySelector(".share-close").textContent=l.shareClose;
+  // Lang buttons
+  document.getElementById("langEN").className="lang-btn"+(curLang=="en"?" lang-active":"");
+  document.getElementById("langTR").className="lang-btn"+(curLang=="tr"?" lang-active":"");
+  // Update lvl text if in game
+  var lvlTxt=document.getElementById("lvlTxt");
+  if(lvlTxt)lvlTxt.textContent=l.levelWord+" "+lv;
+  var lvlBadge=document.getElementById("lvlBadge");
+  if(lvlBadge)lvlBadge.textContent=badge();
+  var gi1=document.getElementById("goldInfoLine1");
+  var gi2=document.getElementById("goldInfoLine2");
+  var gi3=document.getElementById("goldInfoLine3");
+  var gi4=document.getElementById("goldInfoLine4");
+  var git=document.getElementById("goldInfoTitle");
+  var gic=document.getElementById("goldInfoClose");
+  if(gi1)gi1.textContent=l.goldInfoLine1;
+  if(gi2)gi2.textContent=l.goldInfoLine2;
+  if(gi3)gi3.textContent=l.goldInfoLine3;
+  if(gi4)gi4.textContent=l.goldInfoLine4;
+  if(git)git.textContent=l.goldInfoTitle;
+  if(gic)gic.textContent=l.goldInfoClose;
+  updateDailyBanner();
+  refreshBestRow();
+  updateGoldDisplay();
+}
+
+function setLang(lang){
+  curLang=lang;
+  localStorage.setItem("wm_lang",lang);
+  applyLang();
+}
+
+// ── INIT ──
+// History stack'e birden fazla state ekle, geri tuşu asla direkt çıkmasın
+history.pushState({screen:"app"},document.title);
+history.pushState({screen:"app"},document.title);
+history.pushState({screen:"app"},document.title);
+applyLang();
+</script>
+</body>
+</html>
